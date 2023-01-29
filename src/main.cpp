@@ -104,25 +104,26 @@ void setup()
   // configurations for control registers
   // Sensor.writeRegister(LIS3DH_TEMP_CFG_REG, 0x00);
   Sensor.writeRegister(LIS3DH_CTRL_REG1, 0); // power it down.
-  Sensor.writeRegister(LIS3DH_CTRL_REG0, LIS3DHEnums::CTRL_REG0::PullUpConnected);
-  delay(2000);
-  Sensor.writeRegister(LIS3DH_CTRL_REG1, (LIS3DHEnums::CTRL_REG1::ORD0 | LIS3DHEnums::CTRL_REG1::LPen | LIS3DHEnums::CTRL_REG1::Xen | LIS3DHEnums::CTRL_REG1::Yen));
-  Sensor.writeRegister(LIS3DH_CTRL_REG2, (LIS3DHEnums::CTRL_REG2::HP_IA2 | LIS3DHEnums::CTRL_REG2::HP_IA1));
+  Sensor.writeRegister(LIS3DH_CTRL_REG0, LIS3DHEnums::CTRL_REG0::PullUpDisconnected);
+  delay(1000);
+  Sensor.writeRegister(LIS3DH_CTRL_REG1, (LIS3DHEnums::CTRL_REG1::ORD0 | LIS3DHEnums::CTRL_REG1::ORD3 | LIS3DHEnums::CTRL_REG1::LPen | LIS3DHEnums::CTRL_REG1::XYZen));
+  Sensor.writeRegister(LIS3DH_CTRL_REG2, (LIS3DHEnums::CTRL_REG2::HP_IA1 | LIS3DHEnums::CTRL_REG2::HP_IA2));
   Sensor.writeRegister(LIS3DH_CTRL_REG3, (LIS3DHEnums::CTRL_REG3::I1_IA1));
   Sensor.writeRegister(LIS3DH_CTRL_REG4, LIS3DHEnums::CTRL_REG4::FS_2G);
   Sensor.writeRegister(LIS3DH_CTRL_REG5, 0);
-  Sensor.writeRegister(LIS3DH_CTRL_REG6, ( LIS3DHEnums::CTRL_REG6::I2_IA2));
+  Sensor.writeRegister(LIS3DH_CTRL_REG6, (LIS3DHEnums::CTRL_REG6::I2_IA2));
   Sensor.writeRegister(LIS3DH_REFERENCE, 0);
 
-  // uint8_t dummy = 0;
-  // Sensor.readRegister(&dummy, LIS3DH_REFERENCE);
   Sensor.writeRegister(LIS3DH_INT1_THS, 0x04);      // Threshold (THS) = 0000 0001 = 1 LSBs * 15.625mg = 16mg
-  Sensor.writeRegister(LIS3DH_INT1_DURATION, 0x00); // Duration = 1LSBs * (1/10Hz) = 0.1s.
-  Sensor.writeRegister(LIS3DH_INT1_CFG, (LIS3DHEnums::INT_CFG::XHIE | LIS3DHEnums::INT_CFG::YHIE));
-  Sensor.writeRegister(LIS3DH_INT2_THS, 0x10);      // Threshold (THS) = 0001 0000 = 16 LSBs * 15.625mg/LSB = 250mg.
-  Sensor.writeRegister(LIS3DH_INT2_DURATION, 0x00); // Duration = 1LSBs * (1/10Hz) = 0.1s.
-  Sensor.writeRegister(LIS3DH_INT2_CFG, (LIS3DHEnums::INT_CFG::XHIE | LIS3DHEnums::INT_CFG::YHIE));
+  Sensor.writeRegister(LIS3DH_INT1_DURATION, 0x01); // Duration = 1LSBs * (1/10Hz) = 0.1s.
+  Sensor.writeRegister(LIS3DH_INT1_CFG, LIS3DHEnums::INT_CFG::YHIE);
+  Sensor.writeRegister(LIS3DH_INT2_THS, 0x12);      // Threshold (THS) = 0001 0000 = 16 LSBs * 15.625mg/LSB = 250mg.
+  Sensor.writeRegister(LIS3DH_INT2_DURATION, 0x01); // Duration = 1LSBs * (1/100Hz) = 0.1s.
+  Sensor.writeRegister(LIS3DH_INT2_CFG, LIS3DHEnums::INT_CFG::YHIE);
   Sensor.writeRegister(LIS3DH_CTRL_REG5, (LIS3DHEnums::CTRL_REG5::LIR_INT1 | LIS3DHEnums::CTRL_REG5::LIR_INT2));
+
+  uint8_t dummy = 0;
+  Sensor.readRegister(&dummy, LIS3DH_REFERENCE);
 
   Serial.println("Wrote all the registers");
 
@@ -137,26 +138,22 @@ void setup()
 
 void loop()
 {
-
+  uint8_t dummy = 0;
   uint8_t data;
   lis3dh_read_data();
-  delay(500);
-  if (g_int1_triggered == true)
+  delay(250);
+  if (g_int1_triggered == true || g_int2_triggered == true)
   {
     // Serial.println("Interrupt 1 fired!");
     Sensor.readRegister(&data, LIS3DH_INT1_SRC);
     Serial.print("INT1_SRC :");
     describe_src_int(data);
-
-    g_int1_triggered = false;
-  }
-  if (g_int2_triggered == true)
-  {
-    // Serial.println("Interrupt 2 fired!");
     Sensor.readRegister(&data, LIS3DH_INT2_SRC);
     Serial.print("INT2_SRC :");
     describe_src_int(data);
 
+    g_int1_triggered = false;
     g_int2_triggered = false;
+    // Sensor.readRegister(&dummy, LIS3DH_REFERENCE); // read reference  as that's sometimes needed for the HighPassFilter
   }
 }
