@@ -5,9 +5,6 @@
 
 LIS3DH Sensor(I2C_MODE, 0x18);
 
-volatile bool g_int1_triggered = false;
-volatile bool g_int2_triggered = false;
-
 void lis3dh_read_data()
 {
   // read the sensor value
@@ -58,15 +55,6 @@ void describe_src_int(uint8_t src)
   Serial.println();
 }
 
-void int1_trigger()
-{
-  g_int1_triggered = true;
-}
-
-void int2_trigger()
-{
-  g_int2_triggered = true;
-}
 
 void setup()
 {
@@ -126,34 +114,25 @@ void setup()
   Sensor.readRegister(&dummy, LIS3DH_REFERENCE);
 
   Serial.println("Wrote all the registers");
-
-  pinMode(WB_IO5, INPUT);
-  attachInterrupt(WB_IO5, int1_trigger, RISING);
-  Serial.println("Interrupt 1 is setup");
-
-  pinMode(WB_IO6, INPUT);
-  attachInterrupt(WB_IO6, int2_trigger, RISING);
-  Serial.println("Interrupt 2 is setup");
 }
 
 void loop()
 {
-  uint8_t dummy = 0;
   uint8_t data;
   lis3dh_read_data();
-  delay(250);
-  if (g_int1_triggered == true || g_int2_triggered == true)
+  delay(5000);
+
+  Sensor.readRegister(&data, LIS3DH_INT1_SRC);
+  if ((data & LIS3DHEnums::INT_SRC::IA) == LIS3DHEnums::INT_SRC::IA)
   {
-    // Serial.println("Interrupt 1 fired!");
-    Sensor.readRegister(&data, LIS3DH_INT1_SRC);
     Serial.print("INT1_SRC :");
     describe_src_int(data);
-    Sensor.readRegister(&data, LIS3DH_INT2_SRC);
+  }
+
+  Sensor.readRegister(&data, LIS3DH_INT2_SRC);
+  if ((data & LIS3DHEnums::INT_SRC::IA) == LIS3DHEnums::INT_SRC::IA)
+  {
     Serial.print("INT2_SRC :");
     describe_src_int(data);
-
-    g_int1_triggered = false;
-    g_int2_triggered = false;
-    // Sensor.readRegister(&dummy, LIS3DH_REFERENCE); // read reference  as that's sometimes needed for the HighPassFilter
   }
 }
