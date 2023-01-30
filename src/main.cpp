@@ -90,7 +90,7 @@ void setup()
   }
 
   // configurations for control registers
-  // Sensor.writeRegister(LIS3DH_TEMP_CFG_REG, 0x00);
+  
   Sensor.writeRegister(LIS3DH_CTRL_REG1, 0); // power it down.
   Sensor.writeRegister(LIS3DH_CTRL_REG0, LIS3DHEnums::CTRL_REG0::PullUpDisconnected);
   delay(1000);
