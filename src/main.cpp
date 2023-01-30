@@ -104,10 +104,10 @@ void setup()
 
   Sensor.writeRegister(LIS3DH_INT1_THS, 0x04);      // Threshold (THS) = 0000 0001 = 1 LSBs * 15.625mg = 16mg
   Sensor.writeRegister(LIS3DH_INT1_DURATION, 0x01); // Duration = 1LSBs * (1/10Hz) = 0.1s.
-  Sensor.writeRegister(LIS3DH_INT1_CFG, LIS3DHEnums::INT_CFG::YHIE);
-  Sensor.writeRegister(LIS3DH_INT2_THS, 0x12);      // Threshold (THS) = 0001 0000 = 16 LSBs * 15.625mg/LSB = 250mg.
+  Sensor.writeRegister(LIS3DH_INT1_CFG, (LIS3DHEnums::INT_CFG::YHIE | LIS3DHEnums::INT_CFG::XHIE | LIS3DHEnums::INT_CFG::ZHIE) );
+  Sensor.writeRegister(LIS3DH_INT2_THS, 0x50);      // Threshold (THS) = 0001 0000 = 16 LSBs * 15.625mg/LSB = 250mg.
   Sensor.writeRegister(LIS3DH_INT2_DURATION, 0x01); // Duration = 1LSBs * (1/100Hz) = 0.1s.
-  Sensor.writeRegister(LIS3DH_INT2_CFG, LIS3DHEnums::INT_CFG::YHIE);
+  Sensor.writeRegister(LIS3DH_INT2_CFG, (LIS3DHEnums::INT_CFG::YHIE | LIS3DHEnums::INT_CFG::XHIE | LIS3DHEnums::INT_CFG::ZHIE));
   Sensor.writeRegister(LIS3DH_CTRL_REG5, (LIS3DHEnums::CTRL_REG5::LIR_INT1 | LIS3DHEnums::CTRL_REG5::LIR_INT2));
 
   uint8_t dummy = 0;
